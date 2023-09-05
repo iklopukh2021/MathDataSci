@@ -113,7 +113,7 @@ This README provided a basic introduction to NumPy, covering essential concepts 
 
 Happy coding with NumPy!
 
-###
+### Numpy & Matplotlib Functions
 
 Certainly! Here's a sample README file explaining `np.zeros`, `np.ones`, `np.eye`, `plt.imshow`, `plt.plot`, and `np.linspace`:
 
