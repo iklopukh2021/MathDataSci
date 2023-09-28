@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkers Game</title>
+    <style>
+        .board {
+            display: grid;
+            grid-template-columns: repeat(8, 50px);
+            grid-template-rows: repeat(8, 50px);
+        }
+
+        .square {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            vertical-align: middle;
+            background-color: #f0f0f0;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .piece {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin: 5px;
+            position: absolute;
+        }
+
+        .red {
+            background-color: red;
+        }
+
+        .black {
+            background-color: black;
+        }
+
+        #score {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        #turn-indicator {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        /* Style for the color of "Player's Turn:" */
+        #turn-indicator-label {
+            color: black;
+        }
+
+        /* Style for the color of "Black" and "Red" */
+        #player-color {
+            font-weight: bold;
+            color: black;
+            /* Set the color to black for "Black" */
+        }
+
+        /* Style for the score indicator */
+        #score-indicator {
+            color: black;
+            /* Set the color to black for "Score" and "-" */
+            font-weight: bold;
+        }
+
+        /* Style for the red word in the score indicator */
+        #red-word {
+            color: red;
+        }
+
+        /* Style for the heading with alternating black and red letters */
+        #checkers-heading {
+            font-size: 32px;
+            font-weight: bold;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        #checkers-heading span:nth-child(even) {
+            color: black;
+        }
+
+        #checkers-heading span:nth-child(odd) {
+            color: red;
+        }
+
+        #reset-button {
+            display: block;
+            margin: 10px auto;
+            padding: 5px 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="checkers-heading">
+        <span>C</span>
+        <span>H</span>
+        <span>E</span>
+        <span>C</span>
+        <span>K</span>
+        <span>E</span>
+        <span>R</span>
+        <span>S</span>
+    </div>
+    <div id="turn-indicator">Player's Turn: <span id="turn-indicator-label">Black</span></div>
+    <div class="board" id="board"></div>
+    <div id="score"><span id="score-indicator">Score - <span id="red-word">Red</span>: </span><span id="red-score"
+            style="color: red;">0</span>, Black: <span id="black-score" style="color: black;">0</span></div>
+    <button id="reset-button">Reset Game</button>
+
+    <script>
+        const board = document.getElementById("board");
+        const turnIndicator = document.getElementById("turn-indicator");
+        const turnIndicatorLabel = document.getElementById("turn-indicator-label");
+        const redScoreElement = document.getElementById("red-score");
+        const blackScoreElement = document.getElementById("black-score");
+        const resetButton = document.getElementById("reset-button");
+        let currentPlayer = "red";
+        let selectedPiece = null;
+        let redScore = 0;
+        let blackScore = 0;
+
+        function createSquare(row, col) {
+            const square = document.createElement("div");
+            square.className = "square";
+            square.dataset.row = row;
+            square.dataset.col = col;
+
+            if ((row + col) % 2 === 0) {
+                square.style.backgroundColor = "#f0f0f0";
+            } else {
+                square.style.backgroundColor = "#d3d3d3";
+                if (row < 3) {
+                    square.appendChild(createPiece("red"));
+                } else if (row > 4) {
+                    square.appendChild(createPiece("black"));
+                }
+            }
+
+            square.addEventListener("click", () => handleSquareClick(square));
+
+            return square;
+        }
+
+        function createPiece(color) {
+            const piece = document.createElement("div");
+            piece.className = "piece " + color;
+            return piece;
+        }
+
+        function handleSquareClick(square) {
+            const clickedPiece = square.querySelector(".piece");
+
+            if (selectedPiece && clickedPiece && clickedPiece.classList.contains(currentPlayer)) {
+                // If another piece of the same color is clicked, reselect it.
+                selectedPiece = clickedPiece;
+                return;
+            }
+
+            if (!selectedPiece) {
+                if (clickedPiece && clickedPiece.classList.contains(currentPlayer)) {
+                    selectedPiece = clickedPiece;
+                }
+            } else {
+                const fromRow = parseInt(selectedPiece.parentElement.dataset.row);
+                const fromCol = parseInt(selectedPiece.parentElement.dataset.col);
+                const toRow = parseInt(square.dataset.row);
+                const toCol = parseInt(square.dataset.col);
+
+                if (isValidMove(fromRow, fromCol, toRow, toCol)) {
+                    square.appendChild(selectedPiece);
+                    selectedPiece = null;
+
+                    const jumpedRow = (fromRow + toRow) / 2;
+                    const jumpedCol = (fromCol + toCol) / 2;
+                    const jumpedPiece = document.querySelector(`[data-row="${jumpedRow}"][data-col="${jumpedCol}"] .piece`);
+
+                    if (jumpedPiece) {
+                        jumpedPiece.parentElement.removeChild(jumpedPiece);
+                        updateScore(currentPlayer);
+                    }
+
+                    if (isGameOver()) {
+                        declareWinner();
+                    } else {
+                        switchPlayer();
+                        updateTurnIndicator();
+                    }
+                }
+            }
+        }
+
+        function isValidMove(fromRow, fromCol, toRow, toCol) {
+            const rowDiff = toRow - fromRow;
+            const colDiff = Math.abs(toCol - fromCol);
+
+            if (currentPlayer === "red") {
+                if (rowDiff < 0) {
+                    return false;
+                }
+            } else {
+                if (rowDiff > 0) {
+                    return false;
+                }
+            }
+
+            if (Math.abs(rowDiff) === 2 && colDiff === 2) {
+                const jumpedRow = (fromRow + toRow) / 2;
+                const jumpedCol = (fromCol + toCol) / 2;
+
+                const jumpedPiece = document.querySelector(`[data-row="${jumpedRow}"][data-col="${jumpedCol}"] .piece`);
+
+                if (jumpedPiece && jumpedPiece.classList.contains(getOpponent())) {
+                    const targetSquare = document.querySelector(`[data-row="${toRow}"][data-col="${toCol}"]`);
+                    if (!targetSquare.querySelector(".piece")) {
+                        return true;
+                    }
+                }
+            }
+
+            if (Math.abs(rowDiff) === 1 && colDiff === 1) {
+                const targetSquare = document.querySelector(`[data-row="${toRow}"][data-col="${toCol}"]`);
+                if (!targetSquare.querySelector(".piece")) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        function switchPlayer() {
+            currentPlayer = currentPlayer === "red" ? "black" : "red";
+        }
+
+        function updateTurnIndicator() {
+            turnIndicatorLabel.textContent = currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1);
+            turnIndicatorLabel.style.color = currentPlayer;
+        }
+
+        function updateScore(player) {
+            if (player === "red") {
+                redScore++;
+            } else {
+                blackScore++;
+            }
+            redScoreElement.textContent = redScore;
+            blackScoreElement.textContent = blackScore;
+        }
+
+        function getOpponent() {
+            return currentPlayer === "red" ? "black" : "red";
+        }
+
+        function isGameOver() {
+            const redPieces = document.querySelectorAll(".piece.red");
+            const blackPieces = document.querySelectorAll(".piece.black");
+            return redPieces.length === 0 || blackPieces.length === 0;
+        }
+
+        function declareWinner() {
+            const redPieces = document.querySelectorAll(".piece.red");
+            const blackPieces = document.querySelectorAll(".piece.black");
+            if (redPieces.length === 0) {
+                alert("Black wins!");
+            } else {
+                alert("Red wins!");
+            }
+            resetBoard();
+        }
+
+        function initializeBoard() {
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const square = createSquare(row, col);
+                    board.appendChild(square);
+                }
+            }
+        }
+
+        function resetBoard() {
+            // Remove the existing board and reset variables
+            board.innerHTML = "";
+            currentPlayer = "red";
+            selectedPiece = null;
+            redScore = 0;
+            blackScore = 0;
+            redScoreElement.textContent = "0";
+            blackScoreElement.textContent = "0";
+            initializeBoard();
+            updateTurnIndicator();
+        }
+
+        resetButton.addEventListener("click", resetBoard);
+
+        initializeBoard();
+        updateTurnIndicator();
+    </script>
+</body>
+
+</html>
