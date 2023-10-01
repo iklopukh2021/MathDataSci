@@ -6,6 +6,8 @@ In this assignment, I implemented a simple neural network using PyTorch and trai
 
 ## Code Overview
 
+https://colab.research.google.com/drive/1ladfI7rRt0A1z6DRiBx0Mu9-vbPmHIVE?usp=sharing
+
 ### Importing Libraries
 
 I began by importing the necessary libraries, including NumPy, Matplotlib, Torch, and torchvision.
