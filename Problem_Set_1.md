@@ -1,6 +1,4 @@
-Certainly, here's a Markdown report summarizing the assignment:
-
-# Assignment Report
+# Problem Set 1 Report
 
 ## Introduction
 
