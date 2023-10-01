@@ -6,6 +6,7 @@ In this assignment, I implemented a simple neural network using PyTorch and trai
 
 ## Code Overview
 
+Notebook:
 https://colab.research.google.com/drive/1ladfI7rRt0A1z6DRiBx0Mu9-vbPmHIVE?usp=sharing
 
 ### Importing Libraries
