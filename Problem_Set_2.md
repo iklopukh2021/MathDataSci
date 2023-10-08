@@ -2,6 +2,10 @@
 
 In this assignment, I perform various image processing tasks on an RGB image retrieved from a URL using the updated code. The main tasks include resizing the image to 224x224 pixels, creating grayscale copies using different methods, and convolving the grayscale image with 10 random filters. I also display the filters and the resulting feature maps for each convolution.
 
+## Code
+
+Notebook: https://colab.research.google.com/drive/1VPXlFrDwEqLbQ0tHzYRqI2Mh5ZXMWkNC?usp=sharing
+
 ## Load and Resize the Image
 
 I begin by loading an RGB image from the given URL and resizing it to 224x224 pixels. The original image is shown below:
